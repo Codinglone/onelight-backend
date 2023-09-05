@@ -3,6 +3,7 @@ import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { User } from "./entity/User";
 import { Gallery } from "./entity/Gallery";
+import { News } from "./entity/News";
 
 const PORT = parseInt(process.env.DB_PORT) || 5000;
 
@@ -15,7 +16,7 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_NAME,
   synchronize: true,
   logging: false,
-  entities: [User, Gallery],
+  entities: [User, Gallery, News],
   migrations: [],
   subscribers: [],
 });
