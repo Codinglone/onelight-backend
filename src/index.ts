@@ -1,20 +1,48 @@
 import { AppDataSource } from "./data-source"
+const fastify = require('fastify')({logger: true});
+const host = ("DB_HOST" in process.env) ? `0.0.0.0` : `localhost`;
+const multer = require('fastify-multer')
+const PORT = parseInt(process.env.FASTIFY_PORT) || 7000;
 import { User } from "./entity/User"
 
-AppDataSource.initialize().then(async () => {
 
-    console.log("Inserting a new user into the database...")
-    const user = new User()
-    user.firstName = "Timber"
-    user.lastName = "Saw"
-    user.age = 25
-    await AppDataSource.manager.save(user)
-    console.log("Saved a new user with id: " + user.id)
+fastify.register(multer.contentParser)
+fastify.register(require("@fastify/cors"), {
+  methods: "GET,HEAD,OPTIONS,PUT,PATCH,POST,DELETE",
+  origin: "*",
+  allowedHeaders: "*",
+})
 
-    console.log("Loading users from the database...")
-    const users = await AppDataSource.manager.find(User)
-    console.log("Loaded users: ", users)
+fastify.register(require('@fastify/swagger'), {
+    exposeRoute: true,
+    routePrefix: '/api-docs',
+    swagger: {
+        info: {
+            title: 'School MIS Backend',
+            description: 'School MIS Backend using TypeORM, Fastify and Postgres',
+            version: "1.0.0",
+        }
+    }
+})
 
-    console.log("Here you can setup and run express / fastify / any other framework.")
 
-}).catch(error => console.log(error))
+const start = async () => {
+    try {
+      
+      await fastify.listen({host: host, port: PORT }, function (err, address) {
+        if (err) {
+          fastify.log.error(err)
+          process.exit(1)
+        }
+      })
+      AppDataSource.initialize().then(async () => {
+  
+        console.log("connected!!")
+    
+    }).catch(error => console.log(error))
+    } catch (err) {
+      fastify.log.error(err)
+      process.exit(1)
+    }
+  }
+  start()
